@@ -3,6 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:16.4
+    shm_size: 1g
     environment:
       POSTGRES_PASSWORD: password
     ports:
