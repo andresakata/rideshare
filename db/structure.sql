@@ -68,6 +68,7 @@ DROP TABLE IF EXISTS rideshare.trips;
 DROP TABLE IF EXISTS rideshare.ar_internal_metadata;
 DROP FUNCTION IF EXISTS rideshare.scrub_text(input character varying);
 DROP FUNCTION IF EXISTS rideshare.scrub_email(email_address character varying);
+DROP PROCEDURE IF EXISTS rideshare.scrub_batches();
 DROP FUNCTION IF EXISTS rideshare.fast_count(identifier text, threshold bigint);
 DROP TYPE IF EXISTS rideshare.vehicle_status;
 DROP SCHEMA IF EXISTS rideshare;
@@ -145,6 +146,30 @@ DECLARE
     RETURN count;
   END
 $$;
+
+
+--
+-- Name: scrub_batches(); Type: PROCEDURE; Schema: rideshare; Owner: -
+--
+
+CREATE PROCEDURE rideshare.scrub_batches()
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+current_id INT := (SELECT MIN(id) FROM users); max_id INT := (SELECT MAX(id) FROM users); batch_size INT := 1000;
+rows_updated INT;
+BEGIN
+WHILE current_id <= max_id LOOP
+    -- the UPDATE by `id` range
+UPDATE users
+SET email = SCRUB_EMAIL(email)
+WHERE id >= current_id
+AND id < current_id + batch_size;
+    GET DIAGNOSTICS rows_updated = ROW_COUNT;
+COMMIT;
+RAISE NOTICE 'current_id: % - Number of rows updated: %', current_id, rows_updated;
+current_id := current_id + batch_size + 1; END LOOP;
+END; $$;
 
 
 --
