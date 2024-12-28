@@ -14,4 +14,3 @@ class DriversLicenseValidator < ActiveModel::EachValidator
     end
   end
 end
-
