@@ -37,7 +37,7 @@ ALTER TABLE IF EXISTS ONLY rideshare.trips DROP CONSTRAINT IF EXISTS trips_pkey;
 ALTER TABLE IF EXISTS ONLY rideshare.trip_requests DROP CONSTRAINT IF EXISTS trip_requests_pkey;
 ALTER TABLE IF EXISTS ONLY rideshare.trip_positions DROP CONSTRAINT IF EXISTS trip_positions_pkey;
 ALTER TABLE IF EXISTS ONLY rideshare.schema_migrations DROP CONSTRAINT IF EXISTS schema_migrations_pkey;
-ALTER TABLE IF EXISTS ONLY rideshare.vehicle_reservations DROP CONSTRAINT IF EXISTS non_overlapping_vehicle_registration;
+ALTER TABLE IF EXISTS ONLY rideshare.vehicle_reservations DROP CONSTRAINT IF EXISTS non_overlapping_vehicle_reservation;
 ALTER TABLE IF EXISTS ONLY rideshare.locations DROP CONSTRAINT IF EXISTS locations_pkey;
 ALTER TABLE IF EXISTS rideshare.trips DROP CONSTRAINT IF EXISTS chk_rails_4743ddc2d2;
 ALTER TABLE IF EXISTS ONLY rideshare.ar_internal_metadata DROP CONSTRAINT IF EXISTS ar_internal_metadata_pkey;
@@ -484,7 +484,9 @@ CREATE TABLE rideshare.vehicle_reservations (
     starts_at timestamp with time zone NOT NULL,
     ends_at timestamp with time zone NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT vehicle_reservation_minimum_length CHECK ((ends_at >= (starts_at + '00:30:00'::interval))),
+    CONSTRAINT vehicle_reservations_starts_before_ends CHECK ((starts_at < ends_at))
 );
 
 
@@ -613,11 +615,11 @@ ALTER TABLE ONLY rideshare.locations
 
 
 --
--- Name: vehicle_reservations non_overlapping_vehicle_registration; Type: CONSTRAINT; Schema: rideshare; Owner: -
+-- Name: vehicle_reservations non_overlapping_vehicle_reservation; Type: CONSTRAINT; Schema: rideshare; Owner: -
 --
 
 ALTER TABLE ONLY rideshare.vehicle_reservations
-    ADD CONSTRAINT non_overlapping_vehicle_registration EXCLUDE USING gist (int4range(vehicle_id, vehicle_id, '[]'::text) WITH =, tstzrange(starts_at, ends_at) WITH &&) WHERE ((NOT canceled));
+    ADD CONSTRAINT non_overlapping_vehicle_reservation EXCLUDE USING gist (vehicle_id WITH =, tstzrange(starts_at, ends_at) WITH &&) WHERE ((NOT canceled));
 
 
 --
