@@ -40,4 +40,5 @@ group :development, :test do
   gem 'rails-pg-extras'
   gem 'database_consistency'
   gem 'dotenv-rails' # Manage .env
+  gem 'rubocop', require: false
 end
