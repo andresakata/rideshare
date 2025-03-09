@@ -5,4 +5,4 @@ CREATE ROLE owner
   CONNECTION LIMIT 10;
 
 ALTER ROLE owner SET statement_timeout = 20000;
-ALTER ROLE owner SET lock_timeout = 3000;
+ALTER ROLE owner SET lock_timeout = 10000;
