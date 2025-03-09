@@ -23,7 +23,7 @@ class TripCreator
   # available? completing a trip nearby? other business
   # criteria like tenure, driver score etc.
   def best_available_driver
-    Driver.all.sample
+    Driver.all.limit(10).sample
   end
 
   def trip_request
